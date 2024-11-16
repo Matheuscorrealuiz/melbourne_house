@@ -31,7 +31,7 @@ if data_analyses_on:
     st.header('Melbourne Housing - Dataframe')
 
     # exibe todo o dataframe dos dados
-    st.dataframe(dados)
+    st.dataframe(dados.dropna())
 
     # plota um gráfico de barras com a contagem dos dados
     st.header('Mapa de imóveis')
@@ -39,7 +39,7 @@ if data_analyses_on:
 
 # daqui em diante vamos montar a inteface para capturar os dados de input do usuário para realizar a predição
 # que vai identificar predizer a renda de uma pessoa
-st.header('Preditor de income')
+st.header('Preditor de imóveis')
 
 # ler as seguintes informações de input:
 # age - int
