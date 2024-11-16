@@ -25,7 +25,7 @@ print("Carregou a pagina")
 dados = data_handler.load_data()
 
 # carrega o modelo de predição já treinado e validado
-model = pickle.load(open('./models/final_classification_model.pkl', 'rb'))   
+#model = pickle.load(open('./models/final_classification_model.pkl', 'rb'))   
 
 # começa a estrutura da interface do sistema
 st.title('Melbourne Housing ML')
