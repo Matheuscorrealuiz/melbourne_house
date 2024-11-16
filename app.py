@@ -25,7 +25,7 @@ print("Carregou a pagina")
 dados = data_handler.load_data()
 
 # carrega o modelo de predição já treinado e validado
-#model = pickle.load(open('./models/final_classification_model.pkl', 'rb'))   
+model = pickle.load(open('./models/final_classification_model.pkl', 'rb'))   
 
 # começa a estrutura da interface do sistema
 st.title('Melbourne Housing ML')
@@ -37,15 +37,34 @@ if data_analyses_on:
     st.header('Melbourne Housing - Dataframe')
     
     # exibe todo o dataframe dos dados
-    st.dataframe(dados)
+    st.dataframe(dados.dropna())
 
     # plota um gráfico de barras com a contagem dos dados
-    st.header('Income')
-    st.bar_chart(dados.income.value_counts())
+    st.header('Price')
+    st.bar_chart(dados.Price.value_counts())
+
+    # plota um gráfico de barras com a contagem dos dados
+    st.header('Year Built')
+    st.bar_chart(dados.YearBuilt.value_counts())
+
+    # plota um gráfico de barras com a contagem dos dados
+    st.header('Rooms')
+    st.bar_chart(dados.Rooms.value_counts())
+
+    # plota um gráfico de barras com a contagem dos dados
+    st.header('Suburbio')
+    st.bar_chart(dados.Suburb.value_counts())
+
+    # plota um gráfico de barras com a contagem dos dados
+    st.header('Region')
+    st.bar_chart(dados.Regionname.value_counts())
+
+    st.header('Mapa')
+    st.map(data=dados.dropna(), latitude="Lattitude", longitude="Longtitude")
     
 # daqui em diante vamos montar a inteface para capturar os dados de input do usuário para realizar a predição
 # que vai identificar predizer a renda de uma pessoa
-st.header('Preditor de income')
+st.header('Preditor de price')
 
 # ler as seguintes informações de input:
 # age - int
