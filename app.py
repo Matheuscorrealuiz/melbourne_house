@@ -33,6 +33,25 @@ if data_analyses_on:
     # exibe todo o dataframe dos dados
     st.dataframe(dados.dropna())
 
+    st.header('Price')
+    st.bar_chart(dados.Price.value_counts())
+    
+    # plota um gráfico de barras com a contagem dos dados
+    st.header('Year Built')
+    st.bar_chart(dados.YearBuilt.value_counts())
+
+    # plota um gráfico de barras com a contagem dos dados
+    st.header('Rooms')
+    st.bar_chart(dados.Rooms.value_counts())
+
+    # plota um gráfico de barras com a contagem dos dados
+    st.header('Suburbio')
+    st.bar_chart(dados.Suburb.value_counts())
+
+    # plota um gráfico de barras com a contagem dos dados
+    st.header('Region')
+    st.bar_chart(dados.Regionname.value_counts())
+
     # plota um gráfico de barras com a contagem dos dados
     st.header('Mapa de imóveis')
     st.map(data=dados.dropna(), latitude="Lattitude", longitude="Longtitude")
@@ -65,10 +84,13 @@ with col3:
     buildArea = st.number_input('Área construção', step=1)
 
 with col4:
-    suburb = st.text_input('Bairro')
-
-with col5:
     bedrooms = st.number_input('Número de quartos', step=1)
+
+with col1:
+    suburb = st.selectbox(
+        "Bairro",
+        ("Abbotsford", "Airport West", "Albert Park"),
+    )
 
 
 submit = st.button('Predizer valor do imóvel')
