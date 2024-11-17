@@ -109,11 +109,11 @@ if submit:
     # seta todos os attrs da pessoa e já realiza o mapeamento dos attrs
     # se houver atributos não numéricos, agora é o momento de realizar o mapeamento
     house = {
-        'Rooms': rooms,
-        'Bathroom': bathroom,
-        'BuildingArea': buildArea,
-        'Suburb': suburb,
-        'Bedroom2': bedrooms,
+        'BuildingArea': 79.0,
+        'Bathroom': 1.0,
+        'Regionname': 1.0,
+        'Bedroom2': 1.0,
+        'Rooms': 1.0
     }
     print(house)
 
