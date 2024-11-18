@@ -22,8 +22,10 @@ dados = data_handler.load_data()
 # carrega o modelo de predição já treinado e validado
 model = pickle.load(open('./models/final_classification_model_melbourne.pkl', 'rb'))
 
+#declara label encoder para padronização dos dados
 label_encoder = LabelEncoder()
 
+#padroniza a coluna RegionName para numerico
 dados['Regionname'] = label_encoder.fit_transform(dados['Regionname'])
 
 # começa a estrutura da interface do sistema
@@ -86,7 +88,7 @@ with col2:
 
 # captura valor em metros da área de construção
 with col3:
-    buildArea = st.number_input('Área construção', step=1)
+    build_area = st.number_input('Área construção', step=1)
 
 # captura o número de quartos
 with col4:
@@ -117,7 +119,7 @@ if submit:
     # seta todos os attrs da pessoa e já realiza o mapeamento dos attrs
     # se houver atributos não numéricos, agora é o momento de realizar o mapeamento
     house = {
-        'BuildingArea': buildArea,
+        'BuildingArea': build_area,
         'Bathroom': bathroom,
         'Regionname': encoded_region,
         'Bedroom2': bedrooms,
