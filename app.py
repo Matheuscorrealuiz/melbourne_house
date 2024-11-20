@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import util
 import data_handler
 import pickle
 from sklearn.preprocessing import LabelEncoder
@@ -27,6 +26,22 @@ label_encoder = LabelEncoder()
 
 #padroniza a coluna RegionName para numerico
 dados['Regionname'] = label_encoder.fit_transform(dados['Regionname'])
+
+# calculo do suburbio com maior preço medio
+most_expensive = dados.groupby('Suburb')['Price'].mean().idxmax()
+most_expensive_price = dados.groupby('Suburb')['Price'].mean().max()
+
+# calculo do suburbio com menor preço medio
+least_expensive = dados.groupby('Suburb')['Price'].mean().idxmin()
+least_expensive_price = dados.groupby('Suburb')['Price'].mean().min()
+
+# calculo do preço medio do suburbio Abbotsford
+suburb_abb = 'Abbotsford'
+preco_medio_abb = dados[dados['Suburb'] == suburb_abb]['Price'].mean()
+
+# calculo do preço medio do suburbio Airport West
+suburb_aw = 'Airport West'
+preco_medio_aw = dados[dados['Suburb'] == suburb_aw]['Price'].mean()
 
 # começa a estrutura da interface do sistema
 st.title('Melbourne Housing ML')
@@ -55,6 +70,12 @@ if data_analyses_on:
     st.header('Suburbio')
     st.bar_chart(dados.Suburb.value_counts())
 
+    st.info(f"### O subúrbio mais barato é **{least_expensive}**, com preço médio de **${least_expensive_price:,.2f}**", icon="ℹ️")
+    st.info(f"### O subúrbio mais caro é **{most_expensive}**, com preço médio de **${most_expensive_price:,.2f}**", icon="ℹ️")
+
+    st.info(f"### O preço médio no subúrbio {suburb_abb} é ${preco_medio_aw:,.2f}", icon="ℹ️")
+    st.info(f"### O preço médio no subúrbio {suburb_aw} é ${preco_medio_abb:,.2f}", icon="ℹ")
+
     # plota um gráfico de barras com a contagem dos dados
     st.header('Region')
     st.bar_chart(dados.Regionname.value_counts())
@@ -66,11 +87,6 @@ if data_analyses_on:
 # daqui em diante vamos montar a inteface para capturar os dados de input do usuário para realizar a predição
 # que vai identificar predizer a renda de uma pessoa
 st.header('Preditor de imóveis')
-
-# ler as seguintes informações de input:
-# age - int
-# education-num - int
-# hour-per-week - int
 
 # essas foram as informações utilizadas para treinar o modelo
 # assim, todas essas informações também devem ser passadas para o modelo realizar a predição
