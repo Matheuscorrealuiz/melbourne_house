@@ -4,6 +4,8 @@
 
 Este projeto visa realizar a implantação de um modelo de ML em produção, ou seja, em um servidor dedicado que poderá responder solicitações de usuários na internet por meio de um web browser.
 
+Foi utilizado o dataset Melbourne Housing Market, que apresenta informações sobre o mercado imobiliário de Melbourne, na Austrália. Esse dataset contém dados como bairros, regiões, idade das residências, áreas construídas, entre outras características relevantes.
+
 ## Passos para a criação e execução deste projeto
 
 ### Criar um ambiente virtual
