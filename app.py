@@ -18,18 +18,21 @@ print("Carregou a pagina")
 # primeiro de tudo, carrega os dados para um dataframe
 dados = data_handler.load_data()
 
+dados = dados.dropna()
+
 # carrega o modelo de predição já treinado e validado
-model = pickle.load(open('./models/final_classification_model_melbourne.pkl', 'rb'))
+model = pickle.load(open('./models/final_classification_model_melbourne_suburb.pkl', 'rb'))
 
-#declara label encoder para padronização dos dados
-label_encoder = LabelEncoder()
-
-#padroniza a coluna RegionName para numerico
-dados['Regionname'] = label_encoder.fit_transform(dados['Regionname'])
 
 # calculo do suburbio com maior preço medio
-most_expensive = dados.groupby('Suburb')['Price'].mean().idxmax()
+most_expensive_id_price = dados.groupby('Suburb')['Price'].mean().idxmax()
 most_expensive_price = dados.groupby('Suburb')['Price'].mean().max()
+
+most_expensive_id_area = dados.groupby('Suburb')['BuildingArea'].mean().idxmax()
+most_expensive_area = dados.groupby('Suburb')['BuildingArea'].mean().max()
+
+least_expensive_id_area = dados.groupby('Suburb')['BuildingArea'].mean().idxmin()
+least_expensive_area = dados.groupby('Suburb')['BuildingArea'].median().min()
 
 # calculo do suburbio com menor preço medio
 least_expensive = dados.groupby('Suburb')['Price'].mean().idxmin()
@@ -42,6 +45,12 @@ preco_medio_abb = dados[dados['Suburb'] == suburb_abb]['Price'].mean()
 # calculo do preço medio do suburbio Airport West
 suburb_aw = 'Airport West'
 preco_medio_aw = dados[dados['Suburb'] == suburb_aw]['Price'].mean()
+
+#declara label encoder para padronização dos dados
+label_encoder = LabelEncoder()
+
+#padroniza a coluna Suburb para numerico
+dados['Suburb'] = label_encoder.fit_transform(dados['Suburb'])
 
 # começa a estrutura da interface do sistema
 st.title('Melbourne Housing ML')
@@ -70,14 +79,17 @@ if data_analyses_on:
     st.header('Suburbio')
     st.bar_chart(dados.Suburb.value_counts())
 
-    st.info(f"### O subúrbio mais barato é **{least_expensive}**, com preço médio de **${least_expensive_price:,.2f}**", icon="ℹ️")
-    st.info(f"### O subúrbio mais caro é **{most_expensive}**, com preço médio de **${most_expensive_price:,.2f}**", icon="ℹ️")
+    st.info(f"### O subúrbio mais barato é **{least_expensive}** \n com preço médio de **${least_expensive_price:,.2f}**", icon="ℹ️")
+    st.info(f"### O subúrbio mais caro é **{most_expensive_id_price}** \n com preço médio de **${most_expensive_price:,.2f}**", icon="ℹ️")
 
-    st.info(f"### O preço médio no subúrbio {suburb_abb} é ${preco_medio_aw:,.2f}", icon="ℹ️")
-    st.info(f"### O preço médio no subúrbio {suburb_aw} é ${preco_medio_abb:,.2f}", icon="ℹ")
+    st.info(f"### O subúrbio **{most_expensive_id_area}** tem a maior área construida: \n**{most_expensive_area:,.2f}m²**", icon="ℹ️")
+    st.info(f"### O subúrbio **{least_expensive_id_area}** tem a menor área construida: \n**{least_expensive_area:,.2f}m²**", icon="ℹ️")
+
+    st.info(f"### O preço médio no subúrbio {suburb_abb} é \n ${preco_medio_aw:,.2f}", icon="ℹ️")
+    st.info(f"### O preço médio no subúrbio {suburb_aw} é \n ${preco_medio_abb:,.2f}", icon="ℹ️")
 
     # plota um gráfico de barras com a contagem dos dados
-    st.header('Region')
+    st.header('Regiões')
     st.bar_chart(dados.Regionname.value_counts())
 
     # plota um gráfico de barras com a contagem dos dados
@@ -85,40 +97,71 @@ if data_analyses_on:
     st.map(data=dados.dropna(), latitude="Lattitude", longitude="Longtitude")
 
 # daqui em diante vamos montar a inteface para capturar os dados de input do usuário para realizar a predição
-# que vai identificar predizer a renda de uma pessoa
+# que vai identificar predizer o valor de um  imovel
 st.header('Preditor de imóveis')
 
+# ler as seguintes informações de input:
 # essas foram as informações utilizadas para treinar o modelo
 # assim, todas essas informações também devem ser passadas para o modelo realizar a predição
 
-# define a linha 1 de inputs com 3 colunas
-col1, col2, col3, col4, col5 = st.columns(5)
-
-# captura numero de comodos do imóvel
-with col1:
-    rooms = st.number_input('Número de cômodos', step=1)
-
-# captura número de banheiros do imóvel
-with col2:
-    bathroom = st.number_input('Número de banheiros', step=1)
-
-# captura valor em metros da área de construção
-with col3:
-    build_area = st.number_input('Área construção', step=1)
-
-# captura o número de quartos
-with col4:
-    bedrooms = st.number_input('Número de quartos', step=1)
-
-with col1:
-    region = st.selectbox(
-        "Região",
-        ("Eastern Metropolitan", "Eastern Victoria", "Northern Metropolitan", "Northern Victoria",
-         "South-Eastern Metropolitan", "Southern Metropolitan", "Western Metropolitan", "Western Victoria")
-    )
+# Criando o formulário
+with st.form(key='formulario'):
+    # Usando colunas para alinhar os campos
+    col1, col2 = st.columns(2)  # A coluna 2 será maior
+    # Campos do formulário
+    with col1:
+        rooms = st.number_input("Número de cômodos:", min_value=1, key='rooms')
+    with col2:
+        bathroom = st.number_input("Número de banheiros:", min_value=1, key='bathroom')
+    with col1:
+        build_area = st.number_input("Área construção:", min_value=1, key='build_area')
+    with col2:
+        bedrooms = st.number_input("Número de quartos:", min_value=1, key='bedrooms')
 
 
-submit = st.button('Predizer valor do imóvel')
+    # Validação dos dados
+    valid_rooms = rooms >= 1
+    valid_bathroom = rooms >= 1
+    valid_build_area = rooms >= 1
+    valid_bedrooms = rooms >= 1
+
+    # Armazenando a validação no session_state
+    st.session_state.form_valid = valid_rooms and valid_bathroom and valid_build_area and valid_bedrooms
+
+    with st.container():
+        # define a linha 1 de inputs com 1 colunas
+        col1, col2 = st.columns(2)
+        with col1:
+            region = st.selectbox(
+                "Suburbio",
+                ('Abbotsford', 'Aberfeldie', 'Airport West', 'Albanvale', 'Albert Park',
+                'Albion', 'Alphington', 'Altona', 'Altona Meadows', 'Altona North', 'Ardeer',
+                'Armadale', 'Ascot Vale', 'Ashburton', 'Ashwood', 'Aspendale',
+                'Aspendale Gardens', 'Attwood', 'Avondale Heights', 'Bacchus Marsh',
+                'Balaclava', 'Balwyn', 'Balwyn North', 'Bayswater', 'Bayswater North',
+                'Beaconsfield', 'Beaconsfield Upper', 'Beaumaris', 'Bellfield' 'Bentleigh',
+                'Bentleigh East', 'Berwick', 'Black Rock', 'Blackburn', 'Blackburn North',
+                'Blackburn South', 'Bonbeach', 'Boronia', 'Botanic Ridge', 'Box Hill',
+                'Braybrook', 'Briar Hill', 'Brighton', 'Brighton East', 'Broadmeadows',
+                'Brookfield', 'Brooklyn', 'Brunswick', 'Brunswick East', 'Brunswick West',
+                'Bulleen', 'Bullengarook', 'Bundoora', 'Burnley', 'Burnside',
+                'Burnside Heights', 'Burwood', 'Burwood East', 'Cairnlea', 'Camberwell',
+                'Campbellfield', 'Canterbury', 'Carlton', 'Carlton North', 'Carnegie',
+                'Caroline Springs', 'Carrum','Carrum Downs', 'Caulfield', 'Caulfield North',
+                'Caulfield South', 'Chadstone', 'Chelsea', 'Chelsea Heights', 'Cheltenham',
+                'Chirnside Park', 'Clarinda', 'Clayton', 'Clayton South', 'Clifton Hill',
+                'Coburg', 'Coburg North', 'Collingwood', 'Coolaroo', 'Craigieburn',
+                'Cranbourne', 'Cranbourne North', 'Cremorne', 'Croydon', 'Croydon Hills',
+                'Croydon North', 'Croydon South', 'Dallas', 'Dandenong', 'Dandenong North',
+                'Deepdene', 'Deer Park', 'Delahey', 'Derrimut', 'Diamond Creek',
+                'Diggers Rest', 'Dingley Village', 'Doncaster', 'Doncaster East', 'Donvale',
+                'Doreen', 'Doveton', 'Eaglemont', 'East Melbourne', 'Edithvale', 'Elsternwick',
+                'Eltham', 'Eltham North', 'Elwood', 'Emerald', 'Endeavour Hills', 'Epping', 'Kurunjang', 'Kooyong', 'Notting Hill')
+            )
+
+    # Botão de envio, habilitado apenas se todos os dados forem válidos
+    submit = st.form_submit_button("Predizer valor do imóvel", disabled=not st.session_state.form_valid)
+
 
 # data mapping
 # essa parte do código realiza o mapeamento dos campos
@@ -128,33 +171,31 @@ submit = st.button('Predizer valor do imóvel')
 # armazena todos os dados da pessoa nesse dict
 house = {}
 
+build_area = float(build_area)
+bathroom = float(bathroom)
+bedrooms = float(bedrooms)
+rooms = float(rooms)
 
 # verifica se o botão submit foi pressionado
 if submit:
+    # se houver atributos não numéricos, realiza o mapeamento
     encoded_region = label_encoder.transform([region])[0]
-    # seta todos os attrs da pessoa e já realiza o mapeamento dos attrs
-    # se houver atributos não numéricos, agora é o momento de realizar o mapeamento
     house = {
         'BuildingArea': build_area,
         'Bathroom': bathroom,
-        'Regionname': encoded_region,
+        'Suburb': encoded_region,
         'Bedroom2': bedrooms,
         'Rooms': rooms,
     }
     print(house)
 
-
-
-    # converte a pessoa para um pandas dataframe
     # isso é feito para igualar ao tipo de dado que foi utilizado para treinar o modelo
     values = pd.DataFrame([house])
     print(values)
 
-    # realiza a predição de income da pessoa com base nos dados inseridos pelo usuário
+    # realiza a predição de um valor de imovel com base nos dados inseridos pelo usuário
     results = model.predict(values)
     print(results)
 
-    # o modelo foi treinado para retornar uma lista com <=50k e >50k, onde cada posição da lista indica a renda da pessoa
-    # como estamos realizando a predição de somente uma pessoa por vez, o modelo deverá retornar somente um elemento na lista
     if len(results) == 1:
-        st.subheader(results[0])
+        st.subheader(f"Valor: ${results[0]:,.2f}")
